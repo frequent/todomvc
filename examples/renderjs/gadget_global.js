@@ -1,7 +1,7 @@
 /*global window, RSVP, FileReader */
 /*jslint indent: 2, maxerr: 3, unparam: true */
 (function(window, RSVP, FileReader) {
-	"use strict";
+	'use strict';
 
 	window.loopEventListener = function(target, type, useCapture, callback,
 		allowDefault) {
@@ -14,7 +14,7 @@
 
 		function cancelResolver() {
 			if ((callback_promise !== undefined) &&
-				(typeof callback_promise.cancel === "function")) {
+				(typeof callback_promise.cancel === 'function')) {
 				callback_promise.cancel();
 			}
 		}
@@ -35,7 +35,7 @@
 				}
 				cancelResolver();
 				callback_promise = new RSVP.Queue()
-					.push(function() {
+					.push(function () {
 						return callback(evt);
 					})
 					.push(undefined, function(error) {

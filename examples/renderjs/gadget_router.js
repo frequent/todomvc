@@ -20,17 +20,17 @@
 
 		// Initialize the gadget as soon as it is loaded in memory,
 		// blocking all other methods in itself and its ancestors.
-		.ready(function() {
+		.ready(function () {
 			var gadget = this;
 			return gadget.setQuery(getQueryFromHash(window.location.hash));
 		})
 
 		// Initialize the gadget as soon as it is loaded in the DOM,
 		// but only after ready() has finished and stopped blocking.
-		.declareService(function() {
+		.declareService(function () {
 			var gadget = this;
 			return loopEventListener(window, 'hashchange', false,
-				function() {
+				function () {
 					return gadget.setQuery(
 						getQueryFromHash(window.location.hash)
 					);
