@@ -9,7 +9,7 @@
 	var SELECTED = 'selected';
 	var HREF = 'href';
 	var ARR = [];
-	var JIO_ID = 'data-jio-id';
+	var JIO_ID = 'data-id';
 	var UL = 'ul';
 	var LI = 'li';
 	var A = 'a';
@@ -19,7 +19,6 @@
 	var DIVPI = 'div + input';
 	var VIEW = 'view';
 	var STR = '';
-	var TODO = 'todo-item';
 	var COMPLETED = ' completed';
 	var FILTERS = '.filters a';
 	var EDITING = ' editing';
@@ -39,7 +38,7 @@
 	var DONE = 'completed';
 	var CLEAR = '.clear-completed';
 
-  /////////////////////////////
+	/////////////////////////////
 	// methods
 	/////////////////////////////
 	function getId(element, traverse) {
@@ -66,8 +65,7 @@
 	function getElems(element, traverse, target) {
 		switch (traverse) {
 			case 2:
-				return element.parentElement
-                      .parentElement.querySelectorAll(target);
+				return element.parentElement.parentElement.querySelectorAll(target);
 			case 0:
 				return element.querySelectorAll(target);
 		}
@@ -114,9 +112,7 @@
 	}
 
 	function setItemClass(o) {
-		return TODO +
-      (o.completed ? COMPLETED : STR) +
-        (o.editing ? EDITING : STR);
+		return (o.completed ? COMPLETED : STR) + (o.editing ? EDITING : STR);
 	}
 
 	function setHidden(root, hide) {
@@ -130,7 +126,7 @@
 	// let's go
 	rJS(window)
 
-    /////////////////////////////
+		/////////////////////////////
 		// state
 		/////////////////////////////
 		.setState({
@@ -141,16 +137,16 @@
 			query: ''
 		})
 
-    /////////////////////////////
+		/////////////////////////////
 		// ready
 		/////////////////////////////
-		.ready(function() {
+		.ready(function () {
 			var gadget = this;
 
-      // initialize the router and set the model on the main gadget for 
+			// initialize the router and set the model on the main gadget for
 			// easier reference. Set templates, then render first DOM.
 			return new RSVP.Queue()
-				.push(function() {
+				.push(function () {
 					return gadget.getDeclaredGadget('model');
 				})
 				.push(function(response) {
@@ -165,10 +161,10 @@
 						element: div
 					});
 				})
-				.push(function() {
+				.push(function () {
 					gadget.template_dict = {
-						'list_template': Handlebars.compile(
-							document.getElementById('list_template').innerHTML
+						'app_template': Handlebars.compile(
+							document.getElementById('app_template').innerHTML
 						),
 						'item_template': Handlebars.compile(
 							document.getElementById('item_template').innerHTML
@@ -184,38 +180,38 @@
 		// published methods
 		/////////////////////////////
 
-    // router calls to update the DOM land here
+		// router calls to update the DOM land here
 		.allowPublicAcquisition('setQuery', function(param_list) {
 			this.changeState({
 				'query': param_list[0],
 				'update': true
 			});
 		})
- 
+
 		/////////////////////////////
 		// published methods
 		/////////////////////////////
-		.declareMethod("storeItem", function(item, jio_id) {
+		.declareMethod('storeItem', function(item, jio_id) {
 			var gadget = this;
 			var model = gadget.property_dict.model;
 			if (!item) {
 				return;
 			}
 			return new RSVP.Queue()
-				.push(function() {
+				.push(function () {
 					if (jio_id) {
 						return model.putTodo(jio_id, item);
 					}
 					return model.postTodo(item);
 				})
-				.push(function() {
+				.push(function () {
 					return gadget.changeState({
 						'clear_input': true,
 						'update': true
 					});
 				});
 		})
- 
+
 		/////////////////////////////
 		// onStateChange
 		/////////////////////////////
@@ -226,9 +222,9 @@
 			var temp = gadget.template_dict;
 			var element = gadget.element;
 
-      // fetch counter dict and todos
+			// fetch counter dict and todos
 			return new RSVP.Queue()
-				.push(function() {
+				.push(function () {
 					return RSVP.all([
 						dict.model.getTodoCountDict(),
 						dict.model.getTodos(gadget.state.query)
@@ -237,7 +233,7 @@
 				.push(function(response_list) {
 					var count_dict = response_list[0];
 					var todo_list = response_list[1];
-					var plural = todo_list.length === 1 ? ITEM : ITEMS;
+					var plural = count_dict.active === 1 ? ITEM : ITEMS;
 					var focus_selector = INPUT_SELECTOR;
 					var edit_value = STR;
 					var input_value = STR;
@@ -246,11 +242,11 @@
 					var count_content = count_dict.active.toString() + plural;
 					var all_completed = count_dict.active === count_dict.total;
 
-          // tick all
+					// tick all
 					if (toggle_all) {
 						toggle_all.checked =
-              all_checked =
-                getAllChecked(todo_list);
+							all_checked =
+								getAllChecked(todo_list);
 					}
 
 					// keep focus on todo being edited
@@ -258,7 +254,7 @@
 						focus_selector = setSelector(state.editing_jio_id);
 					}
 
-          // set todo being edited
+					// set todo being edited
 					todo_list.forEach(function(todo) {
 						if (todo.id === state.editing_jio_id) {
 							todo.editing = true;
@@ -268,16 +264,16 @@
 						}
 					});
 
-          // clear input
-          if (!modification_dict.hasOwnProperty('clear_input') &&
+					// clear input
+					if (!modification_dict.hasOwnProperty('clear_input') &&
 						getElem(element, INPUT_SELECTOR)) {
 						input_value = getElem(element, INPUT_SELECTOR).value;
 					}
 
-          // set initial DOM
+					// set initial DOM
 					if (modification_dict.hasOwnProperty('create')) {
-						getElem(element, '.handlebars').innerHTML =
-							temp.list_template({
+						getElem(element, '.todoapp').innerHTML =
+							temp.app_template({
 								'todo_exists': count_dict.total >= 1,
 								'todo_count': count_content,
 								'all_completed': all_completed,
@@ -291,43 +287,43 @@
 
 					// Update DOM
 					if (modification_dict.hasOwnProperty('update') &&
-              dict.list)
-          {
+							dict.list)
+					{
 						makeList(getElems(dict.list, 0, LI))
-              .forEach(function(li) {
-                var jio_id = li.getAttribute(JIO_ID);
-                var obj = getObj(todo_list, jio_id).filter(Boolean).pop();
-                if (obj === undefined) {
-                  if (!gadget.state.query) {
-                    li.parentElement.removeChild(li);
-                  } else {
-                    li.classList.add(HIDDEN);
-                  }
-                } else {
-                  li.classList.remove(HIDDEN);
-                  li.className = setItemClass(obj);
-                  getElem(li, LABEL).textContent = obj.title;
-                  getElem(li, DIV).className = setHidden(VIEW, obj.edit);
-                  getElem(li, DIVI).checked = obj.completed;
-                  getElem(li, DIVPI).className = setHidden(EDIT, !obj.editing);
-                }
-                removeFromList(todo_list, jio_id);
-                return;
-            });
+							.forEach(function(li) {
+								var jio_id = li.getAttribute(JIO_ID);
+								var obj = getObj(todo_list, jio_id).filter(Boolean).pop();
+								if (obj === undefined) {
+									if (!gadget.state.query) {
+										li.parentElement.removeChild(li);
+									} else {
+										li.classList.add(HIDDEN);
+									}
+								} else {
+									li.classList.remove(HIDDEN);
+									li.className = setItemClass(obj);
+									getElem(li, LABEL).textContent = obj.title;
+									getElem(li, DIV).className = setHidden(VIEW, obj.edit);
+									getElem(li, DIVI).checked = obj.completed;
+									getElem(li, DIVPI).className = setHidden(EDIT, !obj.editing);
+								}
+								removeFromList(todo_list, jio_id);
+								return;
+						});
 
 						// new items
 						todo_list.forEach(function(item) {
 							setTodo(dict.list, item, temp.item_template);
 						});
 
-            // clear completed
+						// clear completed
 						if (all_completed) {
 							getElem(element, CLEAR).classList.add(HIDDEN);
 						} else {
 							getElem(element, CLEAR).classList.remove(HIDDEN);
 						}
 
-            // counter
+						// counter
 						if (count_dict.total === 0) {
 							getElem(element, MAIN).classList.add(HIDDEN);
 							getElem(element, FOOT).classList.add(HIDDEN);
@@ -346,11 +342,11 @@
 
 					// set filter
 					makeList(getElems(element, 0, FILTERS))
-            .forEach(function(filter) {
-              filter.classList.remove(SELECTED);
-              if (filter.getAttribute(HREF) === window.location.hash) {
-                filter.classList.add(SELECTED);
-              }
+						.forEach(function(filter) {
+							filter.classList.remove(SELECTED);
+							if (filter.getAttribute(HREF) === window.location.hash) {
+								filter.classList.add(SELECTED);
+							}
 						});
 
 					// set todo input value
@@ -365,12 +361,12 @@
 		// onEvent
 		/////////////////////////////
 
-    // new todo
+		// new todo
 		.onEvent('submit', function(event) {
 			return this.storeItem(event.target.elements[0].value.trim());
 		}, false, true)
-	
-    // edit todo
+
+		// edit todo
 		.onEvent('dblclick', function(event) {
 			var gadget = this;
 			var dict = gadget.property_dict;
@@ -378,52 +374,52 @@
 			var jio_id = getId(event.target, 2);
 			var input = target.parentElement.nextElementSibling;
 
-      if (target.className !== 'todo-label') {
-        return;
-      }
+			if (target.tagName !== 'LABEL') {
+				return;
+			}
 
-      return new RSVP.Queue()
-        .push(function() {
-          return gadget.changeState({
-            'update': true,
-            'editing_jio_id': jio_id
-          });
-        })
-        .push(function() {
-          dict.defer = new RSVP.defer();
+			return new RSVP.Queue()
+				.push(function () {
+					return gadget.changeState({
+						'update': true,
+						'editing_jio_id': jio_id
+					});
+				})
+				.push(function () {
+					dict.defer = new RSVP.defer();
 
-          // ESC resolves the defer and prevents storing
-          return RSVP.any([
-            dict.defer.promise,
-            promiseEventListener(input, 'blur', true)
-          ]);
-        })
-        .push(function(event) {
-          var target;
+					// ESC resolves the defer and prevents storing
+					return RSVP.any([
+						dict.defer.promise,
+						promiseEventListener(input, 'blur', true)
+					]);
+				})
+				.push(function(event) {
+					var target;
 
-          // defer was here
-          if (!event) {
-            input.blur();
-            return;
-          }
+					// defer was here
+					if (!event) {
+						input.blur();
+						return;
+					}
 
-          target = event.target;
-          if (target.value === '') {
-            return dict.model.removeOne(getId(target, 1));
-          }
-          return gadget.storeItem({
-            'title': target.value.trim()
-          }, jio_id);
-        })
-        .push(function() {
-          return gadget.changeState({
-            'update': true,
-            'editing_jio_id': ''
-          });
-        });
+					target = event.target;
+					if (target.value === '') {
+						return dict.model.removeOne(getId(target, 1));
+					}
+					return gadget.storeItem({
+						'title': target.value.trim()
+					}, jio_id);
+				})
+				.push(function () {
+					return gadget.changeState({
+						'update': true,
+						'editing_jio_id': ''
+					});
+				});
 		}, false, false)
 
-    // key inputs
+		// key inputs
 		.onEvent('keydown', function(event) {
 			var gadget = this;
 			var dict = gadget.property_dict;
@@ -431,19 +427,19 @@
 			var item;
 			var jio_id;
 
-			if (target.className !== EDIT) {
+			if (event.target.className.indexOf(EDIT) === -1) {
 				return;
 			}
 
 			if (event.keyCode === ESCAPE_KEY) {
 				return new RSVP.Queue()
-					.push(function() {
+					.push(function () {
 						return gadget.changeState({
 							'update': true,
 							'editing_jio_id': STR
 						});
 					})
-					.push(function() {
+					.push(function () {
 						if (dict.defer) {
 							dict.defer.resolve();
 						}
@@ -455,10 +451,10 @@
 				if (item) {
 					jio_id = getId(target, 1);
 					return new RSVP.Queue()
-						.push(function() {
+						.push(function () {
 							return dict.model.changeTitle(jio_id, item);
 						})
-						.push(function() {
+						.push(function () {
 							return gadget.changeState({
 								'update': true,
 								'editing_jio_id': STR
@@ -476,12 +472,12 @@
 		.onEvent('click', function(event) {
 			var gadget = this;
 			return new RSVP.Queue()
-				.push(function() {
+				.push(function () {
 					var model = gadget.property_dict.model;
 					var target = event.target;
 					var item = target.parentElement.parentElement;
 
-          switch (target.className) {
+					switch (target.className) {
 						case 'toggle':
 							return model.toggleOne(
 								getId(target, 2), !item.classList.contains(DONE)
@@ -493,14 +489,14 @@
 						case 'clear-completed':
 							return model.removeCompleted();
 
-            // filters and exiting edit todo via click
+						// filters and exiting edit todo via click
 						default:
 							if (target.getAttribute(HREF)) {
 								setSelectedClass(target);
 							}
 							if (gadget.state.editing_jio_id &&
 								target.className !== EDIT)
-              {
+							{
 								document.activeElement.blur();
 								return true;
 							}

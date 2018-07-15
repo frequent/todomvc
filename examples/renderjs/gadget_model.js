@@ -8,7 +8,7 @@
 
 		// Initialize the gadget as soon as it is loaded in memory,
 		// blocking all other methods in itself and its ancestors.
-		.ready(function() {
+		.ready(function () {
 			var gadget = this;
 
 			// Create a new jIO storage that supports queries,
@@ -62,7 +62,7 @@
 					},
 
 					// Reject callback if todo is not found in storage.
-					function() {
+					function () {
 						return todo;
 					})
 
@@ -103,7 +103,7 @@
 		})
 
 		// Get the count of all total todos and all active todos.
-		.declareMethod('getTodoCountDict', function() {
+		.declareMethod('getTodoCountDict', function () {
 			var gadget = this;
 			var storage = gadget.state.storage;
 
@@ -169,7 +169,7 @@
 		})
 
 		// Remove all completed todos from the storage.
-		.declareMethod('removeCompleted', function() {
+		.declareMethod('removeCompleted', function () {
 			var gadget = this;
 
 			// Get a list of all todos, and only remove the completed ones.
